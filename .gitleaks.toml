@@ -1,0 +1,12 @@
+# Gitleaks configuration
+# https://github.com/gitleaks/gitleaks
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Global allowlist - false positives and known-safe patterns"
+paths = [
+    '''\.env\.example$''',
+    '''\.env\.local\.example$''',
+]

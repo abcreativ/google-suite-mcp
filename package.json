@@ -1,0 +1,39 @@
+{
+  "name": "google-suite-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Google Sheets, Drive, and Docs - read/write spreadsheets, manage files, and edit documents from any MCP-compatible AI client",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "google-suite-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch",
+    "test:e2e": "npm run build && node dist/test/e2e.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.4.0",
+    "dotenv": "^16.4.0",
+    "google-auth-library": "^9.0.0",
+    "googleapis": "^144.0.0",
+    "open": "^10.1.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "mcp",
+    "google-sheets",
+    "google-drive",
+    "google-docs",
+    "googleapis"
+  ],
+  "license": "MIT"
+}
