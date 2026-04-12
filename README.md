@@ -82,13 +82,12 @@ Budget roughly ten minutes for first-time setup if you have never touched Google
 ## How do I install google-suite-mcp?
 
 ```bash
-git clone https://github.com/abcreativ/google-suite-mcp.git
-cd google-suite-mcp
-npm install
-npm run build
+npm install -g google-suite-mcp
 ```
 
-That compiles the TypeScript server into `dist/`. Point your MCP client at `dist/index.js` once OAuth is configured (next section).
+Or skip the global install and let your MCP client fetch it on demand via `npx -y google-suite-mcp` (see client config blocks below).
+
+Either way, the server stores its credentials and OAuth tokens in `~/.google-suite-mcp/`. First time you run a tool, it tells you exactly where to drop your Google Cloud OAuth client JSON and opens a browser for consent. See [SETUP.md](./SETUP.md) for the one-time Google Cloud steps.
 
 ---
 
@@ -122,7 +121,7 @@ If you get stuck on any step, paste [`SETUP.md`](./SETUP.md) into your AI assist
 
 ## How do I connect my MCP client?
 
-Every MCP-compatible client accepts the same two things: a `command` to run and a list of `args`. Use the absolute path to `dist/index.js` from the install step.
+Every MCP-compatible client accepts the same two things: a `command` to run and a list of `args`. The blocks below use `npx` so you never have to manage a local install path.
 
 ### Claude Desktop
 
@@ -137,8 +136,8 @@ Add this entry:
 {
   "mcpServers": {
     "google-suite": {
-      "command": "node",
-      "args": ["/absolute/path/to/google-suite-mcp/dist/index.js"]
+      "command": "npx",
+      "args": ["-y", "google-suite-mcp"]
     }
   }
 }
