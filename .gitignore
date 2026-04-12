@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment
+.env
+.env.local
+.env.*
+!.env.example
+
+# Source maps
+*.js.map
+
+# Google OAuth credentials & tokens (NEVER commit these)
+credentials.json
+tokens.json
+*.json.bak
+
+# Internal development state (Claude Software Company)
+state/
+docs/notes.md
+docs/research/
+
+# Test files (use live Google APIs, not for distribution)
+src/test/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
