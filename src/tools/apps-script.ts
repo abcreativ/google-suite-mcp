@@ -48,7 +48,7 @@ export function registerAppsScriptTools(server: McpServer): void {
     "script_create",
     "Creates a new Apps Script project bound to a spreadsheet using script.projects.create; returns the scriptId needed for all subsequent script_ calls. Use when the user asks to add automation or custom functions to a spreadsheet for the first time. Use as the first step before calling script_update to write code and script_create_version to prepare for deployment. Do not use when: a script already exists for the spreadsheet - use script_get_bound to find it; reading existing script code - use script_get instead; writing code to an existing project - use script_update instead; running a function - use script_run instead; creating a version snapshot - use script_create_version instead; deploying a version - use script_deploy instead. Returns: 'Created Apps Script project\\nscriptId: {scriptId}\\nBound to spreadsheet: {parentId}\\n\\nNext: use script_update to add code.'. Parameters: - spreadsheet_id: spreadsheet ID or URL to bind the script to - title: display name for the script project, e.g. 'Inventory Automation' (optional).",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL to bind the script to"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL; the script will be bound to this sheet"),
       title: z.string().optional().describe("Script project title (default: spreadsheet name + ' Script')"),
     },
     withErrorHandling(async (args) => {
@@ -76,7 +76,7 @@ export function registerAppsScriptTools(server: McpServer): void {
     "script_get",
     "Reads all files in an Apps Script project using script.projects.getContent, returning each file's name, type (SERVER_JS, HTML, JSON), and full source code. Use when the user asks to see the current code in a script project. Use when inspecting existing automation before modifying it with script_update. Do not use when: creating a new script project - use script_create instead; writing or replacing code - use script_update instead; finding a script bound to a spreadsheet - use script_get_bound instead; running a function - use script_run instead; creating a version - use script_create_version instead; deploying - use script_deploy instead. Returns: one block per file formatted as '-- {name} ({type}) --\\n{source}'; blocks separated by blank lines. Parameters: - script_id: Apps Script project ID.",
     {
-      script_id: z.string().describe("Apps Script project ID"),
+      script_id: z.string().describe("Apps Script project ID (57-char token visible in the Apps Script editor URL, or returned by script_create, or looked up from a Sheet/Doc via script_get_bound)"),
     },
     withErrorHandling(async (args) => {
       const script = await getScriptClient();
@@ -97,7 +97,7 @@ export function registerAppsScriptTools(server: McpServer): void {
     "script_update",
     "Writes or replaces all files in an Apps Script project using script.projects.updateContent; files not included in the call are deleted. Auto-generates the appsscript.json manifest if not provided. Use when the user asks to write, update, or replace automation code in a script project. Use when adding new files or functions after creating a project with script_create. Do not use when: creating a new project - use script_create instead; reading existing code before editing - use script_get first; finding a bound script - use script_get_bound instead; running a function - use script_run instead; creating a snapshot before deploying - use script_create_version instead; deploying the script - use script_deploy instead. Returns: 'Updated {N} file(s): {name (TYPE), name (TYPE), ...}'. Parameters: - script_id: Apps Script project ID - files: array of objects with name (no extension), source (full code), and optional type (SERVER_JS default, HTML, JSON) - time_zone: IANA timezone for auto-generated manifest (optional; default America/New_York).",
     {
-      script_id: z.string().describe("Apps Script project ID"),
+      script_id: z.string().describe("Apps Script project ID (57-char token visible in the Apps Script editor URL, or returned by script_create, or looked up from a Sheet/Doc via script_get_bound)"),
       files: z
         .array(
           z.object({
@@ -154,7 +154,7 @@ export function registerAppsScriptTools(server: McpServer): void {
     "script_get_bound",
     "Finds Apps Script projects bound to a spreadsheet by searching Drive for scripts with the spreadsheet as parent and by name pattern; deduplicates results from both strategies. Use when the user asks whether a spreadsheet already has a script, or when looking up the scriptId before calling script_get or script_update. Use before script_create to avoid creating a duplicate project. Do not use when: creating a new project - use script_create instead; reading a known script's code - use script_get instead; writing code - use script_update instead; running a function - use script_run instead; creating a version - use script_create_version instead; deploying - use script_deploy instead. Returns: 'Found {N} script(s):\\n\\nscriptId: {id}\\nname: {name}' per result; or a not-found message with instruction to use script_create. Parameters: - spreadsheet_id: spreadsheet ID or URL to search against.",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
     },
     withErrorHandling(async (args) => {
       const { getDriveClient } = await import("../client/google-client.js");
@@ -209,7 +209,7 @@ export function registerAppsScriptTools(server: McpServer): void {
     "script_run",
     "Executes a named function in a deployed Apps Script project via script.scripts.run; requires an active deployment (created with script_deploy) and the script's GCP project must match the OAuth credentials' GCP project. Use when the user asks to trigger a custom function or automation in a script. Use when testing a deployed function after updating code and creating a new version. Do not use when: the script has no deployment - call script_create_version then script_deploy first; creating a new project - use script_create instead; reading code - use script_get instead; writing code - use script_update instead; creating a version snapshot - use script_create_version instead; deploying a version - use script_deploy instead. Returns: function return value as a string or pretty-printed JSON; returns 'Function executed (no return value).' if the function returns nothing. Parameters: - script_id: Apps Script project ID - function_name: name of the function to call, e.g. 'sendWeeklyReport' - parameters: array of arguments to pass (optional).",
     {
-      script_id: z.string().describe("Apps Script project ID"),
+      script_id: z.string().describe("Apps Script project ID (57-char token visible in the Apps Script editor URL, or returned by script_create, or looked up from a Sheet/Doc via script_get_bound)"),
       function_name: z.string().describe("Function name to execute"),
       parameters: z
         .array(z.unknown())
@@ -254,7 +254,7 @@ export function registerAppsScriptTools(server: McpServer): void {
     "script_create_version",
     "Creates a versioned snapshot of an Apps Script project using script.projects.versions.create; the version number returned is required by script_deploy. Use when the user asks to save a snapshot before deploying, or after updating code with script_update and ready to publish. Use as the required step between script_update and script_deploy in the standard automation workflow. Do not use when: creating a new project - use script_create instead; writing code - use script_update instead; finding a bound script - use script_get_bound instead; reading code - use script_get instead; deploying a version - that is the next step, use script_deploy after this call; running a function - use script_run instead. Returns: 'Created version {N}: {description}\\n\\nNext: use script_deploy to make it executable.' Parameters: - script_id: Apps Script project ID - description: optional human-readable label, e.g. 'Added email trigger'.",
     {
-      script_id: z.string().describe("Apps Script project ID"),
+      script_id: z.string().describe("Apps Script project ID (57-char token visible in the Apps Script editor URL, or returned by script_create, or looked up from a Sheet/Doc via script_get_bound)"),
       description: z.string().optional().describe("Version description"),
     },
     withErrorHandling(async (args) => {
@@ -279,7 +279,7 @@ export function registerAppsScriptTools(server: McpServer): void {
     "script_deploy",
     "Deploys a versioned Apps Script project as an API executable using script.projects.deployments.create or .update; after deployment the script can be invoked with script_run. Updates an existing API executable deployment if one exists, otherwise creates a new one. Use when the user asks to deploy or publish a script so it can be executed. Use as the final step after script_update and script_create_version in the standard workflow. Do not use when: creating a new project - use script_create instead; writing code - use script_update instead; creating the version number needed here - use script_create_version first; running a function after deploying - use script_run instead; finding a bound script - use script_get_bound instead. Returns: 'Updated deployment {deploymentId} to version {N}...' if updating, or 'Deployed version {N}\\ndeploymentId: {id}...' if creating new. Parameters: - script_id: Apps Script project ID - version_number: version number from script_create_version, e.g. 3 - description: optional deployment label.",
     {
-      script_id: z.string().describe("Apps Script project ID"),
+      script_id: z.string().describe("Apps Script project ID (57-char token visible in the Apps Script editor URL, or returned by script_create, or looked up from a Sheet/Doc via script_get_bound)"),
       version_number: z.number().int().describe("Version number to deploy (from script_create_version)"),
       description: z.string().optional().describe("Deployment description"),
     },

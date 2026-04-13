@@ -72,7 +72,7 @@ export function registerDashboardTools(server: McpServer): void {
     "sheets_build_dashboard",
     "Builds a formatted dashboard sheet with KPI metric cards, data tables, embedded charts, frozen header, and banded rows in batched API calls; creates or reuses the target tab. Use when the user asks to build an executive dashboard or summary view from structured data in one operation. Use when a sheet needs KPI cards, a data table, and charts composed together in a fixed layout. Do not use when: building a sheet with arbitrary section types and custom layouts - use sheets_build_sheet instead; creating a single formatted data table - use sheets_write_table instead; writing raw data without formatting - use sheets_write_range instead; adding a chart to an existing sheet - use sheets_create_chart instead. Returns: 'Dashboard built in sheet \"{sheet}\":\\n  Title: {t}\\n  KPIs: {N}\\n  Data tables: {N}\\n  Charts: {N}\\n  Formatting requests: {N}'. Parameters: - sheet_name: tab to build in (created if it does not exist) - kpis: array of {label, value} objects for metric cards - data_tables: array of table specs each with headers and rows - charts: array of chart specs referencing data ranges.",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
       sheet_name: z
         .string()
         .optional()
