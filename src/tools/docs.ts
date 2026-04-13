@@ -109,7 +109,7 @@ export function registerDocsTools(server: McpServer): void {
   // ── docs_create ──────────────────────────────────────────────────────────────
   server.tool(
     "docs_create",
-    "Create a Google Doc. Returns ID and URL.",
+    "Creates a new Google Docs document using documents.create, optionally inserting initial plain text at index 1; returns the document ID and edit URL. Use when the user asks to create a new document or draft. Use when you need a document ID before appending content with docs_write_text. Do not use when: reading an existing document - use docs_get_text instead; replacing text in an existing document - use docs_replace_text instead; inserting text at a specific position - use docs_write_text instead; formatting text - use docs_format_text instead; exporting a document - use docs_export instead; inserting a table - use docs_insert_table instead; inserting an image - use docs_insert_image instead. Returns: 'Created: {title}\\nid: {docId}\\nurl: https://docs.google.com/document/d/{docId}/edit'. Parameters: - title: document name (default 'Untitled Document') - content: optional initial text inserted at the document start (index 1).",
     {
       title: z.string().default("Untitled Document"),
       content: z.string().optional().describe("Initial plain text content"),
@@ -150,7 +150,7 @@ export function registerDocsTools(server: McpServer): void {
   // ── docs_get_text ────────────────────────────────────────────────────────────
   server.tool(
     "docs_get_text",
-    "Read a Doc's text content. Headings use # prefixes, lists use dashes.",
+    "Reads all text content from a Google Doc using documents.get and extracts it as plain text; headings are prefixed with # marks, list items with dashes, and table cells are tab-separated. Use when the user asks to read or summarize a document. Use when you need to find a character index before calling docs_write_text or docs_format_text with a numeric position. Do not use when: creating a document - use docs_create instead; replacing specific text - use docs_replace_text instead; inserting text - use docs_write_text instead; formatting text - use docs_format_text instead; exporting in a specific format - use docs_export instead. Returns: the extracted document text as a string, or '(empty document)'; appends a truncation notice if max_chars is reached. Parameters: - docId: document ID or full URL - max_chars: character limit for the response (default 50000).",
     {
       docId: z.string().describe("Document ID or URL"),
       max_chars: z.number().int().min(1).optional().describe("Truncate output to N chars (default: 50000)"),
@@ -174,7 +174,7 @@ export function registerDocsTools(server: McpServer): void {
   // ── docs_export ──────────────────────────────────────────────────────────────
   server.tool(
     "docs_export",
-    "Export a Doc as pdf/docx/txt/html/epub. Saves to localPath or returns content.",
+    "Exports a Google Doc to a specified format using drive.files.export; saves the file to a local path when localPath is provided, or returns the content directly for txt/html or a size summary for binary formats. Use when the user asks to download or export a document as PDF, Word, plain text, HTML, or EPUB. Use when exporting to a local file path for further processing. Do not use when: reading the document text in-session - use docs_get_text instead; creating a document - use docs_create instead; replacing text - use docs_replace_text instead; inserting content - use docs_write_text or docs_insert_table or docs_insert_image instead. Returns: 'Exported to: {localPath}' when saved; for txt/html returns the raw content; for binary formats without localPath returns 'Export ready ({format}, {N} bytes). Provide localPath to save to disk.' Parameters: - format: one of pdf, docx, txt, html, epub - localPath: absolute local file path to save to (optional; must be absolute if provided).",
     {
       docId: z.string().describe("Document ID or URL"),
       format: z.enum(["pdf", "docx", "txt", "html", "epub"]),
@@ -220,7 +220,7 @@ export function registerDocsTools(server: McpServer): void {
   // ── docs_write_text ──────────────────────────────────────────────────────────
   server.tool(
     "docs_write_text",
-    "Insert text at beginning, end, or a specific index in a Doc.",
+    "Inserts text at the beginning, end, or a 1-based character index in a Google Doc using documents.batchUpdate with insertText; the Docs API uses 1-based indices where index 1 is the document start. Use when the user asks to append content to a document, prepend a header, or insert text at a known position. Use when building up document content section by section after creating it with docs_create. Do not use when: replacing existing text by pattern - use docs_replace_text instead; reading document content - use docs_get_text instead; formatting a range of text - use docs_format_text instead; inserting a table - use docs_insert_table instead; inserting an image - use docs_insert_image instead; creating a document - use docs_create instead. Returns: 'Inserted {N} characters at index {index}.' Parameters: - position: 'beginning' (index 1), 'end' (auto-detected), or a 1-based integer index; use docs_get_text to find the current document length before targeting a specific index.",
     {
       docId: z.string().describe("Document ID or URL"),
       text: z.string().describe("Text to insert"),
@@ -265,7 +265,7 @@ export function registerDocsTools(server: McpServer): void {
   // ── docs_replace_text ────────────────────────────────────────────────────────
   server.tool(
     "docs_replace_text",
-    "Find and replace text throughout a Doc.",
+    "Replaces all occurrences of a text pattern throughout a Google Doc using documents.batchUpdate with replaceAllText; the replacement is applied document-wide. Use when the user asks to update a recurring label, name, or placeholder in a document, such as replacing '{{CLIENT_NAME}}' with an actual name. Use when standardizing terminology across an entire document in one operation. Do not use when: inserting new content at a position - use docs_write_text instead; formatting existing text - use docs_format_text instead; reading document content - use docs_get_text instead; creating a document - use docs_create instead; inserting a table - use docs_insert_table instead; inserting an image - use docs_insert_image instead. Returns: 'Replaced {N} occurrence(s) of \"{find}\".' Parameters: - find: literal text string to search for - replace: replacement text - matchCase: true for case-sensitive matching (default false).",
     {
       docId: z.string().describe("Document ID or URL"),
       find: z.string().describe("Text to search for"),
@@ -302,7 +302,7 @@ export function registerDocsTools(server: McpServer): void {
   // ── docs_format_text ─────────────────────────────────────────────────────────
   server.tool(
     "docs_format_text",
-    "Format text by index range or searchText. Supports bold, italic, underline, fontSize, color, heading, link.",
+    "Applies inline text formatting (bold, italic, underline, strikethrough, font size, color, hyperlink) or paragraph heading style to a character range in a Google Doc using documents.batchUpdate with updateTextStyle and updateParagraphStyle; the range is specified by 1-based startIndex and endIndex, or resolved automatically from searchText. Use when the user asks to bold a heading, set a font size, color a phrase, or apply a heading style to a paragraph. Use when formatting a known text phrase by passing it as searchText to avoid calculating indices manually. Do not use when: inserting new text - use docs_write_text instead; replacing text - use docs_replace_text instead; reading document content - use docs_get_text instead; inserting a table - use docs_insert_table instead; inserting an image - use docs_insert_image instead. Returns: 'Applied formatting to range [{startIndex}, {endIndex}).' Parameters: - startIndex/endIndex: 1-based character indices (endIndex is exclusive); use docs_get_text to read content and count character positions - searchText: alternative to index pair; finds the first occurrence automatically.",
     {
       docId: z.string().describe("Document ID or URL"),
       startIndex: z.number().int().min(1).optional().describe("Range start index (inclusive)"),
@@ -444,7 +444,7 @@ export function registerDocsTools(server: McpServer): void {
   // ── docs_insert_table ────────────────────────────────────────────────────────
   server.tool(
     "docs_insert_table",
-    "Insert a table into a Doc, optionally populated with data.",
+    "Inserts a table into a Google Doc using documents.batchUpdate with insertTable, then populates cells with data in a second pass if data is provided; the Docs API requires a 1-based insertion index at a paragraph boundary. Use when the user asks to add a data table to a document. Use when inserting a comparison table or a structured grid of values into a report. Do not use when: inserting text - use docs_write_text instead; inserting an image - use docs_insert_image instead; formatting existing text - use docs_format_text instead; replacing text - use docs_replace_text instead. Returns: 'Table inserted: {rows} rows x {columns} columns.' Parameters: - rows: number of table rows (max 50) - columns: number of table columns (max 20) - index: 1-based insertion index at a paragraph boundary; omit to insert at end (the handler creates a new paragraph automatically) - data: optional array of arrays of strings, outer = rows, inner = cells; e.g. [['Header A','Header B'],['Val 1','Val 2']].",
     {
       docId: z.string().describe("Document ID or URL"),
       rows: z.number().int().min(1).max(50),
@@ -559,7 +559,7 @@ export function registerDocsTools(server: McpServer): void {
   // ── docs_insert_image ────────────────────────────────────────────────────────
   server.tool(
     "docs_insert_image",
-    "Insert an image by URL or Drive file ID. Optional width/height in pt.",
+    "Inserts an inline image into a Google Doc using documents.batchUpdate with insertInlineImage; the image source is either a public URL or a Drive file ID, and the insertion uses a 1-based character index. Use when the user asks to add an image or logo to a document. Use when embedding a chart screenshot or diagram from Drive into a report. Do not use when: inserting text - use docs_write_text instead; inserting a table - use docs_insert_table instead; formatting text - use docs_format_text instead; reading document content - use docs_get_text instead. Returns: 'Image inserted at index {index}.' Parameters: - imageUrl: public HTTPS URL of the image (mutually exclusive with driveFileId) - driveFileId: Drive file ID of an image already in Drive (mutually exclusive with imageUrl) - index: 1-based insertion index; omit to insert at the document end - width/height: optional dimensions in points (1 pt = 1/72 inch).",
     {
       docId: z.string().describe("Document ID or URL"),
       imageUrl: z.string().optional().describe("Public image URL"),
