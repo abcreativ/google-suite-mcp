@@ -1,6 +1,6 @@
 {
   "name": "google-suite-mcp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "MCP server for Google Sheets, Drive, Docs, and Apps Script. 82 tools, read/write, OAuth2, for Claude Desktop, Cursor, Windsurf, VS Code, Gemini CLI, and any MCP client.",
   "type": "module",
   "main": "dist/index.js",
