@@ -61,7 +61,7 @@ export function registerFormattingTools(server: McpServer): void {
     "sheets_format_cells",
     "Applies visual formatting to a single contiguous cell range using spreadsheets.batchUpdate with repeatCell; only the properties you supply are changed - unspecified properties are preserved. Use when the user asks to bold a header row, change a column's number format, or set a background color on a range. Use when targeting a single contiguous range with one or more formatting properties at once. Do not use when: formatting multiple non-contiguous ranges in one call - use sheets_apply_formats instead; setting borders specifically - use sheets_set_borders (or include borders via sheets_apply_formats); merging cells - use sheets_merge_cells instead; resizing columns - use sheets_resize_columns instead; resizing rows - use sheets_resize_rows instead; freezing panes - use sheets_freeze_panes instead; adding conditional formatting - use sheets_add_conditional_format instead. Returns: 'Applied formatting to {range} ({N} field(s) updated)', or 'No formatting options provided - nothing to update.' Parameters: - range: A1 notation including sheet name, e.g. 'Sheet1!A1:D1' - number_format_pattern: format string, e.g. '$#,##0.00', '0.0%', 'yyyy-mm-dd' - horizontal_alignment: LEFT, CENTER, or RIGHT - wrap_strategy: OVERFLOW_CELL, WRAP, or CLIP.",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
       range: z.string().describe("A1 notation range, e.g. 'Sheet1!A1:C10'"),
       bold: z.boolean().optional().describe("Bold text"),
       italic: z.boolean().optional().describe("Italic text"),
@@ -194,7 +194,7 @@ export function registerFormattingTools(server: McpServer): void {
     "sheets_set_borders",
     "Sets border styles on the outer and inner edges of a single cell range using spreadsheets.batchUpdate with updateBorders; each edge (top, bottom, left, right, inner horizontal, inner vertical) can be styled independently. Use when the user asks to add a box border around a header row or draw grid lines within a table. Use when borders need precise per-edge control that sheets_format_cells or sheets_apply_formats do not expose. Do not use when: applying borders alongside cell formatting in a single call - use sheets_apply_formats instead (it combines borders and formatting per range); applying formatting without borders - use sheets_format_cells instead; merging cells - use sheets_merge_cells instead; resizing columns - use sheets_resize_columns instead; resizing rows - use sheets_resize_rows instead; adding conditional formatting - use sheets_add_conditional_format instead. Returns: 'Borders applied to {range}'. Parameters: - range: A1 notation including sheet name, e.g. 'Sheet1!A1:E10' - top/bottom/left/right/inner_horizontal/inner_vertical: each accepts style (SOLID, DASHED, DOTTED, DOUBLE, SOLID_MEDIUM, SOLID_THICK, NONE) and optional color (hex) and width_pixels.",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
       range: z.string().describe("A1 notation range"),
       top: BorderSpec.describe("Top border"),
       bottom: BorderSpec.describe("Bottom border"),
@@ -239,7 +239,7 @@ export function registerFormattingTools(server: McpServer): void {
     "sheets_merge_cells",
     "Merges or unmerges a cell range in a Google Sheet using spreadsheets.batchUpdate with mergeCells or unMergeCells; merged cells display their top-left cell's content and the remaining cells' content is discarded. Use when the user asks to merge a header cell across multiple columns, such as a title row spanning A1:E1. Use when unmerging a previously merged region to restore individual cell editing. Do not use when: formatting cells without merging - use sheets_format_cells instead; applying borders - use sheets_set_borders instead; resizing columns or rows - use sheets_resize_columns or sheets_resize_rows instead; freezing panes - use sheets_freeze_panes instead; applying conditional formatting - use sheets_add_conditional_format instead. Returns: 'Merged cells in {range}' or 'Unmerged cells in {range}'. Parameters: - range: A1 notation including sheet name, e.g. 'Sheet1!A1:E1' - merge_type: MERGE_ALL (all cells into one), MERGE_COLUMNS (merge within each column), or MERGE_ROWS (merge within each row) - unmerge: set to true to unmerge instead of merge.",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
       range: z.string().describe("A1 notation range"),
       merge_type: z
         .enum(["MERGE_ALL", "MERGE_COLUMNS", "MERGE_ROWS"])
@@ -281,7 +281,7 @@ export function registerFormattingTools(server: McpServer): void {
     "sheets_resize_columns",
     "Sets the pixel width of a column range using spreadsheets.batchUpdate with updateDimensionProperties; omit pixel_size to trigger auto-resize based on cell content using autoResizeDimensions. Use when the user asks to set a specific column width or auto-fit columns to their content. Use when adjusting column widths after writing data to make a sheet readable. Do not use when: sheets_write_table or sheets_build_sheet already include auto-resize - prefer those for full table builds; resizing rows - use sheets_resize_rows instead; formatting cell content - use sheets_format_cells instead; merging cells - use sheets_merge_cells instead; freezing panes - use sheets_freeze_panes instead; applying borders - use sheets_set_borders instead. Returns: 'Resized {N} column(s) (cols {start}–{end}) to {px}px' or 'to auto'. Parameters: - start_column: 0-based inclusive start index, e.g. 0 = column A - end_column: 0-based inclusive end index, e.g. 3 = column D - pixel_size: width in pixels; omit to auto-fit.",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
       sheet: z.string().describe("Sheet name or numeric sheet ID"),
       start_column: z.number().int().describe("0-based start column index"),
       end_column: z.number().int().describe("0-based end column index (inclusive)"),
@@ -338,7 +338,7 @@ export function registerFormattingTools(server: McpServer): void {
     "sheets_resize_rows",
     "Sets the pixel height of a row range using spreadsheets.batchUpdate with updateDimensionProperties; omit pixel_size to auto-fit row height to cell content using autoResizeDimensions. Use when the user asks to set a specific row height or auto-fit row heights after wrapping text. Use when adjusting header row height for visual emphasis in a table layout. Do not use when: resizing columns - use sheets_resize_columns instead; merging cells - use sheets_merge_cells instead; formatting cell content - use sheets_format_cells instead; freezing panes - use sheets_freeze_panes instead; applying borders - use sheets_set_borders instead; applying conditional formatting - use sheets_add_conditional_format instead. Returns: 'Resized {N} row(s) (rows {start+1}–{end+1}) to {px}px' or 'to auto'. Parameters: - start_row: 0-based inclusive start index, e.g. 0 = row 1 - end_row: 0-based inclusive end index, e.g. 0 = row 1 (single row) - pixel_size: height in pixels; omit to auto-fit.",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
       sheet: z.string().describe("Sheet name or numeric sheet ID"),
       start_row: z.number().int().describe("0-based start row index"),
       end_row: z.number().int().describe("0-based end row index (inclusive)"),
@@ -395,7 +395,7 @@ export function registerFormattingTools(server: McpServer): void {
     "sheets_freeze_panes",
     "Freezes a number of rows and/or columns in a sheet using spreadsheets.batchUpdate with updateSheetProperties targeting gridProperties; pass 0 to unfreeze. Use when the user asks to keep a header row or label column visible while scrolling through a large dataset. Use when unfreezing previously frozen rows by setting frozen_row_count=0. Do not use when: sheets_write_table or sheets_build_sheet already include freeze - prefer those for full table builds; formatting cells - use sheets_format_cells instead; merging cells - use sheets_merge_cells instead; resizing columns - use sheets_resize_columns instead; resizing rows - use sheets_resize_rows instead; applying borders - use sheets_set_borders instead; applying conditional formatting - use sheets_add_conditional_format instead. Returns: 'Froze {N} row(s) and/or {N} column(s) in sheet \"{sheet}\"', or 'Nothing to freeze - provide frozen_row_count and/or frozen_column_count.' Parameters: - sheet: tab name or numeric sheet ID - frozen_row_count: number of rows to freeze from the top (0 unfreezes) - frozen_column_count: number of columns to freeze from the left (0 unfreezes).",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
       sheet: z.string().describe("Sheet name or numeric sheet ID"),
       frozen_row_count: z
         .number()
@@ -461,7 +461,7 @@ export function registerFormattingTools(server: McpServer): void {
     "sheets_add_conditional_format",
     "Adds a single conditional formatting rule to a cell range using spreadsheets.batchUpdate with addConditionalFormatRule; supports gradient color scales, boolean conditions (cell value comparisons), and custom formula conditions. Use when the user asks to highlight cells above a threshold, apply a red-green gradient scale to a column, or color cells matching a custom formula. Use when adding one targeted rule to a range without batching. Do not use when: adding multiple rules in one call - use sheets_add_conditional_formats instead; applying static formatting - use sheets_format_cells instead; applying borders - use sheets_set_borders instead; merging cells - use sheets_merge_cells instead; setting data validation rules - use sheets_set_validation instead; clearing an existing conditional rule - use sheets_format_cells to overwrite. Returns: 'Added conditional formatting rule to {range}'. Parameters: - range: A1 notation including sheet name, e.g. 'Sheet1!A2:A100' - rule_type: 'gradient' for color scales, 'boolean' for value comparisons, or 'custom_formula' for formula-driven rules.",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
       range: z.string().describe("A1 notation range"),
       rule_type: z
         .enum(["condition", "color_scale", "formula"])
@@ -671,7 +671,7 @@ export function registerFormattingTools(server: McpServer): void {
     "sheets_add_conditional_formats",
     "Adds multiple conditional formatting rules in a single API call using spreadsheets.batchUpdate with multiple addConditionalFormatRule requests; each rule can target a different range and use a different rule type. Use when the user asks to apply several conditional formatting rules at once, such as highlighting different status values with different colors across a column. Use when batching rules is needed to avoid multiple round trips to the API. Do not use when: adding a single conditional formatting rule - use sheets_add_conditional_format instead; applying static formatting to multiple ranges - use sheets_apply_formats instead; formatting a single range - use sheets_format_cells instead; applying borders - use sheets_set_borders instead; setting data validation - use sheets_set_validation instead. Returns: 'Added {N} conditional formatting rule(s)'. Parameters: - rules: array where each entry has a range (A1 notation) and a rule definition with rule_type (gradient, boolean, or custom_formula) and type-specific fields.",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
       rules: z
         .array(
           z.object({
@@ -812,7 +812,7 @@ export function registerFormattingTools(server: McpServer): void {
     "sheets_apply_formats",
     "Applies formatting - including font, color, alignment, number format, and borders - to multiple cell ranges in a single API call using spreadsheets.batchUpdate with multiple repeatCell and updateBorders requests; each range in the operations array gets its own independent formatting specification. Use when the user asks to format several non-contiguous ranges at once, such as styling a header row, a totals row, and a data body in one operation. Use when combining border and cell formatting for the same range to avoid two separate API calls. Do not use when: formatting a single range - use sheets_format_cells or sheets_set_borders instead; adding conditional formatting - use sheets_add_conditional_format or sheets_add_conditional_formats instead; merging cells - use sheets_merge_cells instead; resizing columns - use sheets_resize_columns instead; freezing panes - use sheets_freeze_panes instead. Returns: 'Applied formatting: {N} range(s), {M} operation(s)', or 'No formatting options provided - nothing to update.' Parameters: - operations: array where each entry has a range (A1 notation) and optional formatting fields (bold, italic, font_size, text_color, background_color, horizontal_alignment, number_format_pattern, borders).",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
       operations: z
         .array(
           z.object({

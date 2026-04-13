@@ -40,7 +40,7 @@ export function registerReadingTools(server: McpServer): void {
     "sheets_read_range",
     "Reads cell values from a single contiguous range using spreadsheets.values.get; by default returns formatted display values (FORMATTED_VALUE). Use when the user asks to see the contents of a specific region of a sheet. Use when you need to verify existing data before overwriting it with sheets_write_range. Do not use when: reading multiple non-contiguous ranges in one call - use sheets_read_multiple_ranges instead; reading an entire sheet tab - use sheets_read_sheet instead; reading a single cell's metadata, formula, note, or validation rule - use sheets_get_cell_info instead; searching for a specific value - use sheets_search_values instead; reading formula strings instead of computed values - use sheets_get_formulas instead. Returns: '{range}:\\n{tab-separated values per row}', or '{range}: (empty)' if the range has no content. Parameters: - range: A1 notation including sheet name, e.g. 'Sheet1!A1:C10' - value_render_option: FORMATTED_VALUE (default), UNFORMATTED_VALUE, or FORMULA.",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
       range: z.string().describe("A1 notation range, e.g. 'Sheet1!A1:C10' or 'A1:C10'"),
       value_render_option: ValueRenderOption,
     },
@@ -64,7 +64,7 @@ export function registerReadingTools(server: McpServer): void {
     "sheets_read_multiple_ranges",
     "Reads values from several non-contiguous ranges in a single API call using spreadsheets.values.batchGet; returns each range's data as a separate section. Use when you need to read a header row and a data block at the same time without two round trips. Use when comparing values from different parts of a spreadsheet in one operation. Do not use when: reading a single contiguous range - use sheets_read_range instead; reading an entire sheet - use sheets_read_sheet instead; reading a single cell's details - use sheets_get_cell_info instead; searching for a value - use sheets_search_values instead; reading formula strings - use sheets_get_formulas instead. Returns: each range formatted as '{range}:\\n{tab-separated rows}', sections separated by a blank line. Parameters: - ranges: array of A1 notation strings, e.g. ['Sheet1!A1:C1', 'Sheet1!A10:C20'] - value_render_option: FORMATTED_VALUE (default), UNFORMATTED_VALUE, or FORMULA.",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
       ranges: z.array(z.string()).describe("Array of A1 notation ranges"),
       value_render_option: ValueRenderOption,
     },
@@ -92,7 +92,7 @@ export function registerReadingTools(server: McpServer): void {
     "sheets_read_sheet",
     "Reads all cell values from a sheet tab using spreadsheets.values.get with the full sheet range; optional max_rows and max_columns limits prevent loading oversized sheets. Use when the user asks to see everything in a tab, or when the data range is unknown. Use when reading a small-to-medium sheet in full for analysis or inspection. Do not use when: the target range is already known - use sheets_read_range for efficiency; reading multiple specific regions - use sheets_read_multiple_ranges instead; reading a single cell's details - use sheets_get_cell_info instead; searching for a specific value - use sheets_search_values instead; reading formula strings - use sheets_get_formulas instead. Returns: '{range}:\\n{tab-separated values per row}', or '{range}: (empty)'. Parameters: - sheet_name: tab name, e.g. 'Sales Data' (optional; defaults to the first tab if omitted) - max_rows: truncate output after this many rows, e.g. 100 - max_columns: truncate output after this many columns.",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
       sheet_name: z.string().optional().describe("Sheet/tab name (default: first sheet)"),
       max_rows: z.number().int().optional().describe("Maximum rows to return"),
       max_columns: z.number().int().optional().describe("Maximum columns to return"),
@@ -141,7 +141,7 @@ export function registerReadingTools(server: McpServer): void {
     "sheets_get_cell_info",
     "Retrieves detailed metadata for a single cell using spreadsheets.get with includeGridData, returning its effective value, formula string, formatted display value, number format, note, and data validation rule. Use when the user asks what formula or format a specific cell contains. Use when verifying a cell's data validation rule before modifying it with sheets_set_validation. Do not use when: reading a range of cell values - use sheets_read_range instead; reading formula strings across a range - use sheets_get_formulas instead; reading multiple non-contiguous ranges - use sheets_read_multiple_ranges instead; reading an entire sheet - use sheets_read_sheet instead; searching for a value - use sheets_search_values instead. Returns: multi-line string with 'Cell: {addr}', then lines for Value, Formula, Formatted, Number format, Note, and Validation only when each is present; or '{cell}: (empty)'. Parameters: - cell: single cell address in A1 notation, e.g. 'Sheet1!B3'.",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
       cell: z.string().describe("Cell address in A1 notation, e.g. 'Sheet1!B3' or 'B3'"),
     },
     withErrorHandling(async ({ spreadsheet_id, cell }) => {
@@ -203,7 +203,7 @@ export function registerReadingTools(server: McpServer): void {
     "sheets_search_values",
     "Searches cell values across one or all tabs in a spreadsheet for a text pattern using a client-side scan of FORMATTED_VALUE data; supports regex and caps results at max_results. Use when the user asks to find which cells contain a specific value, name, or pattern. Use when you need the cell addresses of all matches before operating on them. Do not use when: replacing matched text - use sheets_find_replace or sheets_find_replace_many instead; reading a known cell range - use sheets_read_range instead; reading a single cell's details - use sheets_get_cell_info instead; reading formula strings - use sheets_get_formulas instead. Returns: '{N} match(es):\\n{SheetName!ColRow}: {value}' for each match, or 'No cells match \"{pattern}\".' A truncation notice is appended if max_results is reached. Parameters: - pattern: text to match, e.g. 'ACME Corp' or regex '^\d{4}-\d{2}$' - use_regex: true to treat pattern as a regular expression - sheet_name: limit search to one tab, e.g. 'Sheet1' (optional; defaults to all tabs).",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
       pattern: z.string().describe("Text to search for (case-insensitive substring match)"),
       sheet_name: z
         .string()

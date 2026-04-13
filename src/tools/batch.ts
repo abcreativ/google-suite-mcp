@@ -15,7 +15,7 @@ export function registerBatchTools(server: McpServer): void {
     "sheets_batch_update",
     "Sends arbitrary request objects to the Google Sheets API spreadsheets.batchUpdate endpoint directly; this is the raw escape hatch for any operation not covered by the other Sheets tools. Use when the user requires a Sheets API request type that has no dedicated tool, such as updateDeveloperMetadata or setBasicFilter with advanced options. Use when you need to combine several different request types in a single atomic call. Do not use when: a dedicated tool covers the operation - prefer sheets_format_cells, sheets_write_range, sheets_protect_range, sheets_add_conditional_format, sheets_add_sheet, sheets_insert_rows, sheets_resize_columns, sheets_set_validation, or any other specific Sheets tool because they validate inputs and return structured output; building a full table - use sheets_write_table; building a full sheet - use sheets_build_sheet. Returns: 'Batch update: {N} request(s), {N} reply(ies).\\n{key IDs and titles extracted from each reply}'. Parameters: - requests: array of Google Sheets API request objects in their raw API shape, e.g. [{\"addSheet\":{\"properties\":{\"title\":\"New\"}}}].",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
       requests: z
         .array(z.record(z.string(), z.unknown()))
         .min(1)

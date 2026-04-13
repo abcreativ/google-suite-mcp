@@ -19,7 +19,7 @@ export function registerSheetTools(server: McpServer): void {
     "sheets_add_sheet",
     "Adds a new tab to an existing spreadsheet using spreadsheets.batchUpdate with addSheet; the new sheet is empty and returns its numeric sheetId. Use when the user asks to add a new tab to an existing spreadsheet, such as adding a 'Summary' or 'Config' sheet. Use when you need to create a destination sheet before writing data to it with sheets_write_range or sheets_build_sheet. Do not use when: creating a new spreadsheet file - use sheets_create instead; duplicating an existing tab with its data - use sheets_duplicate_sheet instead; renaming a tab - use sheets_rename_sheet instead; listing existing tabs - use sheets_list_sheets instead; deleting a tab - use sheets_delete_sheet instead; reordering tabs - use sheets_reorder_sheets instead. Returns: 'Added sheet \"{title}\" (sheetId: {sheetId})'. The returned sheetId is required by tools that take a numeric sheet ID. Parameters: - title: tab name (optional; Google assigns a default name if omitted) - tab_color: hex color string, e.g. '#FF0000'.",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
       title: z.string().optional().describe("Tab title"),
       row_count: z.number().int().optional().describe("Initial row count (default: 1000)"),
       column_count: z.number().int().optional().describe("Initial column count (default: 26)"),
@@ -58,7 +58,7 @@ export function registerSheetTools(server: McpServer): void {
     "sheets_delete_sheet",
     "Permanently deletes a tab from a spreadsheet using spreadsheets.batchUpdate with deleteSheet; all data on the sheet is lost and the action cannot be undone. Use when the user asks to remove a tab that is no longer needed, such as a staging sheet after its data has been merged. Use when cleaning up temporary sheets created during a multi-step workflow. Do not use when: adding a tab - use sheets_add_sheet instead; renaming a tab - use sheets_rename_sheet instead; listing tabs - use sheets_list_sheets instead; duplicating a tab - use sheets_duplicate_sheet instead; reordering tabs - use sheets_reorder_sheets instead; deleting the entire spreadsheet file - use sheets_delete instead. Returns: 'Deleted sheet \"{sheet}\"'. Parameters: - sheet: tab name or numeric sheet ID to delete, e.g. 'Staging' or '12345'.",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
       sheet: z.string().describe("Sheet name or numeric sheet ID"),
     },
     withErrorHandling(async ({ spreadsheet_id, sheet }) => {
@@ -83,7 +83,7 @@ export function registerSheetTools(server: McpServer): void {
     "sheets_rename_sheet",
     "Renames a tab in a spreadsheet using spreadsheets.batchUpdate with updateSheetProperties targeting the title field; the numeric sheetId is unchanged. Use when the user asks to change a tab name, such as renaming 'Sheet1' to 'Sales Data'. Use when a sheet name in a formula reference needs to be updated to match a new naming convention. Do not use when: adding a new tab - use sheets_add_sheet instead; deleting a tab - use sheets_delete_sheet instead; duplicating a tab - use sheets_duplicate_sheet instead; renaming the entire spreadsheet file - use sheets_rename instead; reordering tabs - use sheets_reorder_sheets instead; listing tab names - use sheets_list_sheets instead. Returns: 'Renamed \"{sheet}\" → \"{new_title}\"'. Parameters: - sheet: current tab name or numeric sheet ID, e.g. 'Sheet1' - new_title: the replacement tab name, e.g. 'Sales Data'.",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
       sheet: z.string().describe("Current sheet name or numeric sheet ID"),
       new_title: z.string().describe("New tab title"),
     },
@@ -116,7 +116,7 @@ export function registerSheetTools(server: McpServer): void {
     "sheets_duplicate_sheet",
     "Copies an existing tab - including its cell values, formulas, formatting, conditional rules, and data validation - to a new tab in the same spreadsheet using spreadsheets.batchUpdate with duplicateSheet; returns the new tab's sheetId. Use when the user asks to clone a sheet template or make a backup copy before editing. Use when creating a new period's data sheet by duplicating a prior period's template. Do not use when: adding a blank tab - use sheets_add_sheet instead; renaming a tab - use sheets_rename_sheet instead; deleting a tab - use sheets_delete_sheet instead; reordering tabs - use sheets_reorder_sheets instead; listing tabs - use sheets_list_sheets instead; copying a spreadsheet file - use sheets_copy instead. Returns: 'Duplicated to \"{new_title}\" (sheetId: {sheetId})'. Parameters: - sheet: source tab name or numeric sheet ID, e.g. 'Template' - new_title: title for the duplicate, e.g. 'April 2025' (optional; Google assigns a default if omitted) - insert_at_index: 0-based position to place the new tab, e.g. 0 = first tab.",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
       sheet: z.string().describe("Sheet name or numeric sheet ID to duplicate"),
       new_title: z.string().optional().describe("Title for the duplicate"),
       insert_at_index: z.number().int().optional().describe("Position to insert the duplicate (0-based)"),
@@ -152,7 +152,7 @@ export function registerSheetTools(server: McpServer): void {
     "sheets_reorder_sheets",
     "Reorders all tabs in a spreadsheet to a specified sequence using spreadsheets.batchUpdate with updateSheetProperties on each sheet's index; every tab in the spreadsheet must be listed or the call will error. Use when the user asks to rearrange tabs, such as moving a Summary tab to the front. Use when organizing a workbook with many sheets into a logical reading order. Do not use when: adding a tab - use sheets_add_sheet instead; deleting a tab - use sheets_delete_sheet instead; renaming a tab - use sheets_rename_sheet instead; duplicating a tab - use sheets_duplicate_sheet instead; listing current tab order - use sheets_list_sheets instead. Returns: 'Reordered {N} sheets.'. Parameters: - sheet_order: array of all tab names or numeric IDs in the desired final order, e.g. ['Summary', 'Data', 'Charts']; must include every tab - omitting any tab causes an error.",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
       sheet_order: z
         .array(z.string())
         .describe("Sheet names or IDs in the desired order (all sheets must be listed)"),
@@ -188,7 +188,7 @@ export function registerSheetTools(server: McpServer): void {
     "sheets_list_sheets",
     "Reads all tab metadata from a spreadsheet using spreadsheets.get with fields scoped to sheets.properties, returning each tab's sheetId, index, title, grid dimensions, and tab color. Use when you need to enumerate available tabs before operating on one by name or ID. Use when looking up a sheetId required by protection, validation, or formatting tools. Do not use when: adding a tab - use sheets_add_sheet instead; deleting a tab - use sheets_delete_sheet instead; renaming a tab - use sheets_rename_sheet instead; duplicating a tab - use sheets_duplicate_sheet instead; reordering tabs - use sheets_reorder_sheets instead; reading top-level spreadsheet metadata - use sheets_get_info instead. Returns: one line per tab formatted as '[{sheetId}] index:{N} \"{title}\"  {rows}r × {cols}c', or 'No sheets found.' Parameters: - spreadsheetId: the ID from the sheet URL (between /d/ and /edit).",
     {
-      spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
+      spreadsheet_id: z.string().describe("sheet ID from the URL (the token between /d/ and /edit) or the full URL"),
     },
     withErrorHandling(async ({ spreadsheet_id }) => {
       const sheets = await getSheetsClient();
