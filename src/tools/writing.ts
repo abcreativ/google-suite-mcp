@@ -169,7 +169,7 @@ export function registerWritingTools(server: McpServer): void {
 
   server.tool(
     "sheets_insert_columns",
-    "Insert empty columns at a position (0-based index).",
+    "Inserts empty columns at a position in a Google Sheet using spreadsheets.batchUpdate with insertDimension on the COLUMNS dimension; pushes existing columns to the right. Use when the user asks to add new columns between existing ones without overwriting data, such as inserting a calculation column between two data columns. Use when creating structural space in a sheet layout before writing values with sheets_write_range. Do not use when: inserting rows - use sheets_insert_rows instead; deleting rows or columns - use sheets_delete_rows_columns instead; inserting columns with content already filled - insert first then write with sheets_write_range; writing values to existing columns - use sheets_write_range instead. Returns: 'Inserted {N} column(s) at column {column_index+1} in \"{sheet}\"'. Parameters: - column_index: 0-based index of the position to insert before, e.g. 0 inserts before column A - count: number of columns to insert (minimum 1) - inherit_from_before: true copies formatting from the column to the left (default false). Example: sheets_insert_columns(spreadsheetId, 'Sheet1', 2, 1) inserts one column before column C.",
     {
       spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
       sheet: z.string().describe("Sheet name or numeric sheet ID"),
@@ -212,7 +212,7 @@ export function registerWritingTools(server: McpServer): void {
 
   server.tool(
     "sheets_delete_rows_columns",
-    "DESTRUCTIVE: Delete rows or columns by index range (0-based, end exclusive). Cannot be undone.",
+    "Permanently deletes a contiguous range of rows or columns from a sheet using spreadsheets.batchUpdate with deleteDimension; existing rows/columns shift to close the gap. This action cannot be undone. Use when the user asks to remove specific rows or columns from a sheet, such as deleting a header row or dropping empty trailing columns. Use when trimming a sheet layout after a data cleanup operation. Do not use when: deleting an entire sheet tab - use sheets_delete_sheet instead; inserting rows - use sheets_insert_rows instead; inserting columns - use sheets_insert_columns instead; clearing cell content without removing the row/column structure - use sheets_write_range with empty values instead. Returns: 'Deleted {N} row(s)/column(s) from {start_index+1} to {end_index} in \"{sheet}\"'. Parameters: - dimension: 'ROWS' or 'COLUMNS' - start_index: 0-based inclusive start, e.g. 0 = first row or column A - end_index: 0-based exclusive end, e.g. start_index=2, end_index=4 deletes 2 items.",
     {
       spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
       sheet: z.string().describe("Sheet name or numeric sheet ID"),

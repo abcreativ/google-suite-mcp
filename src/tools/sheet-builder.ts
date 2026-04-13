@@ -105,7 +105,7 @@ const ChartSpec = z.object({
 export function registerSheetBuilderTools(server: McpServer): void {
   server.tool(
     "sheets_build_sheet",
-    "Build an entire sheet from a declarative spec: title, sections (tables, KPIs, text), conditional formats, charts - all in one call. For building from scratch.",
+    "Builds an entire sheet from a declarative spec in multiple batched API calls: creates or reuses a tab, writes sections (tables with headers and data, KPI blocks, text labels), applies conditional formatting, and embeds charts. Use when the user asks to create a complete formatted sheet in one operation, such as building a monthly report tab from structured data. Use when sections, formulas, and charts all need to be composed together without multiple tool calls. Do not use when: building a multi-section dashboard with KPIs and metrics display - use sheets_build_dashboard instead; writing a single formatted table - use sheets_write_table instead; writing data only without formatting - use sheets_write_range instead; creating a blank spreadsheet file - use sheets_create instead; adding a blank tab - use sheets_add_sheet instead. Returns: 'Sheet built in \"{sheet}\": {N} section(s) ({N} table, {N} KPI, {N} text), {N} conditional format(s), {N} chart(s)'. Parameters: - sheet_name: tab to build in (created if it does not exist) - sections: array of section specs each with type (table, kpi, or text), start_row, and type-specific content fields.",
     {
       spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
       sheet_name: z.string().optional().describe("Sheet name (created if not exists)"),
