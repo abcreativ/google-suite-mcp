@@ -68,7 +68,7 @@ const server = new McpServer(
 
 server.tool(
   "auth_status",
-  "Check OAuth token state: expiry, refresh token presence, scopes. Use to diagnose auth errors.",
+  "Returns the current OAuth2 token state including expiry timestamp, refresh token presence, credentials file path, and all granted scopes. Use when any tool returns a 401 or authentication error to diagnose whether the token is expired or missing. Use before calling auth_refresh to confirm the token is actually expired. Do not use when: the token is confirmed expired and you need to refresh it - use auth_refresh instead; all tools are working normally - no auth check is needed. Returns: multi-line block with tokens file path, refresh token status, access token expiry (marked EXPIRED if past), credentials file path, and a list of granted OAuth scopes.",
   {},
   withErrorHandling(async () => {
     const info = getTokenInfo();
@@ -110,7 +110,7 @@ server.tool(
 
 server.tool(
   "auth_refresh",
-  "Force OAuth2 token refresh. Use when tools return 401 errors.",
+  "Forces an immediate OAuth2 token refresh using the stored refresh token and returns the new access token expiry. Use when any tool returns a 401 error or when auth_status shows the access token is expired. Use to proactively refresh the token before a long batch operation. Do not use when: the token is still valid - check with auth_status first; no refresh token is stored - a full re-authentication requires restarting the server to trigger the browser OAuth2 flow. Returns: 'Token refreshed successfully.\\nNew access token expires at: {isoString}'.",
   {},
   withErrorHandling(async () => {
     const result = await refreshTokens();
