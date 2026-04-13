@@ -4,8 +4,6 @@ Google Workspace MCP server for Claude Desktop, Cursor, Windsurf, VS Code, Gemin
 -->
 
 # google-suite-mcp
-
-[![google-suite-mcp MCP server](https://glama.ai/mcp/servers/abcreativ/google-suite-mcp/badges/card.svg)](https://glama.ai/mcp/servers/abcreativ/google-suite-mcp)
 [![google-suite-mcp MCP server](https://glama.ai/mcp/servers/abcreativ/google-suite-mcp/badges/score.svg)](https://glama.ai/mcp/servers/abcreativ/google-suite-mcp)
 
 **You have an AI that can think. Now give it hands.**
