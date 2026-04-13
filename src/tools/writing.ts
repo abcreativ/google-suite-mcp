@@ -24,7 +24,7 @@ export function registerWritingTools(server: McpServer): void {
 
   server.tool(
     "sheets_write_range",
-    "Write values to a range (overwrites existing content). Formulas: prefix with = (interpreted via USER_ENTERED). Bulk: sheets_write_multiple_ranges.",
+    "Calls spreadsheets.values.update to overwrite a single contiguous range with a 2D value array. Use when replacing existing cell content at a known address (e.g. 'Sheet1!A1:C5'), or populating an empty area in one shot. Do not use when: targeting multiple disconnected ranges (use sheets_write_multiple_ranges); adding rows after existing data (use sheets_append_rows); inserting empty structural rows (use sheets_insert_rows); writing a single formula (use sheets_write_formula); dispersing formulas across cells (use sheets_write_formulas); building a new formatted table (use sheets_write_table). Returns: 'Updated {N} cell(s) in {range}'. Values starting with = are evaluated as formulas (USER_ENTERED mode). The values array is row-major: outer array indexes rows, inner array indexes columns.",
     {
       spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
       range: z.string().describe("A1 notation range, e.g. 'Sheet1!A1'"),
@@ -54,7 +54,7 @@ export function registerWritingTools(server: McpServer): void {
 
   server.tool(
     "sheets_write_multiple_ranges",
-    "Write values to multiple ranges in one call.",
+    "Calls spreadsheets.values.batchUpdate to write values to several disconnected ranges in one atomic API call. Use when populating non-contiguous areas in a single round trip, such as filling a header block and a data block at different locations; or when updating totals rows in multiple sections simultaneously. Do not use when: writing to a single range (use sheets_write_range); adding rows after existing data (use sheets_append_rows); inserting empty rows (use sheets_insert_rows); writing a single formula (use sheets_write_formula); dispersing formulas across cells (use sheets_write_formulas); building a new formatted table (use sheets_write_table). Returns: 'Updated {N} cell(s) across {M} range(s)'. Each entry in the data array requires a range in A1 notation (e.g. 'Sheet1!A1:C3') and a 2D values array (row-major: outer array = rows, inner array = cells). Defaults to USER_ENTERED so formulas starting with = are evaluated; pass RAW to store literal strings. All ranges must belong to the same spreadsheet.",
     {
       spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
       data: z
@@ -94,7 +94,7 @@ export function registerWritingTools(server: McpServer): void {
 
   server.tool(
     "sheets_append_rows",
-    "Append rows after the last occupied row. Non-destructive.",
+    "Calls spreadsheets.values.append with INSERT_ROWS to add rows after the last occupied row in the detected table range. Use when adding new records to an existing table without touching current data, or when the exact insertion row is unknown. Do not use when: writing to a fixed address (use sheets_write_range); targeting multiple disconnected ranges (use sheets_write_multiple_ranges); inserting empty structural rows to push content down (use sheets_insert_rows); writing a single formula (use sheets_write_formula); dispersing formulas across cells (use sheets_write_formulas); building a new formatted table (use sheets_write_table). Returns: 'Appended {N} row(s) to {range}'. The range parameter identifies the table to extend (e.g. 'Sheet1!A1' or 'Sheet1!A:A'); the API detects the actual end of data automatically. Existing rows are never overwritten.",
     {
       spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
       range: z.string().describe("A1 notation range to append after (e.g. 'Sheet1!A1')"),
@@ -126,7 +126,7 @@ export function registerWritingTools(server: McpServer): void {
 
   server.tool(
     "sheets_insert_rows",
-    "Insert empty rows at a position (0-based index).",
+    "Calls spreadsheets.batchUpdate with an insertDimension request to push existing rows down and create empty rows at a given position. Use when making room for future data at a specific row without writing any values, or when inserting structural blank rows into an existing layout. Do not use when: adding data rows at the end of a table (use sheets_append_rows); writing values to existing rows (use sheets_write_range); targeting multiple disconnected ranges (use sheets_write_multiple_ranges); writing a single formula (use sheets_write_formula); dispersing formulas across cells (use sheets_write_formulas); building a new formatted table (use sheets_write_table); inserting columns instead (use sheets_insert_columns). Returns: 'Inserted {N} row(s) at row {row_index+1} in \"{sheet}\"'. row_index is 0-based; count sets how many empty rows to insert (minimum 1). Set inherit_from_before to copy formatting from the row above.",
     {
       spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
       sheet: z.string().describe("Sheet name or numeric sheet ID"),

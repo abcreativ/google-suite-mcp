@@ -14,7 +14,7 @@ export function registerFormulaTools(server: McpServer): void {
 
   server.tool(
     "sheets_write_formula",
-    "Write a formula to a single cell (include leading '='). For many formulas at once, use sheets_write_formulas (plural).",
+    "Calls spreadsheets.values.update on a single cell with USER_ENTERED to write one formula. Use when placing a calculated expression in a specific cell, such as a summary at the bottom of a column; or when setting a standalone lookup or validation formula in an isolated cell. Do not use when: writing multiple formulas to scattered cells (use sheets_write_formulas); writing an ARRAYFORMULA that spills across a range (use sheets_write_array_formula); writing mixed data and formulas in a contiguous block (use sheets_write_range); targeting multiple disconnected ranges (use sheets_write_multiple_ranges); adding rows after existing data (use sheets_append_rows); inserting empty rows (use sheets_insert_rows); building a new formatted table (use sheets_write_table). Returns: 'Formula written to {range}'. The formula must start with =; the handler does not prepend it automatically.",
     {
       spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
       cell: z.string().describe("Target cell in A1 notation, e.g. 'Sheet1!B2' or 'B2'"),
@@ -41,7 +41,7 @@ export function registerFormulaTools(server: McpServer): void {
 
   server.tool(
     "sheets_write_formulas",
-    "Write multiple formulas to scattered cells in one call. Bulk version of sheets_write_formula.",
+    "Calls spreadsheets.values.batchUpdate with USER_ENTERED to write multiple formulas to scattered cells in one API call. Use when distributing calculated expressions across non-adjacent cells in a single round trip, such as setting column totals across a summary row; or when applying the same formula pattern to several named cells simultaneously. Do not use when: writing a single formula (use sheets_write_formula); writing an ARRAYFORMULA that spills results (use sheets_write_array_formula); writing mixed data and formulas in a contiguous block (use sheets_write_range); targeting multiple disconnected ranges (use sheets_write_multiple_ranges); adding rows after existing data (use sheets_append_rows); inserting empty rows (use sheets_insert_rows); building a new formatted table (use sheets_write_table). Returns: 'Wrote {N} formula(s)'. If a formula string does not start with =, the handler prepends it automatically. Each entry requires a cell address in A1 notation (e.g. 'Sheet1!C2') and a formula string.",
     {
       spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
       formulas: z
