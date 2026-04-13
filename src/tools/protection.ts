@@ -15,7 +15,7 @@ export function registerProtectionTools(server: McpServer): void {
 
   server.tool(
     "sheets_protect_range",
-    "Protect a range - restrict editing to specific users or show warning.",
+    "Protects a cell range in a Google Sheet using spreadsheets.batchUpdate with addProtectedRange, restricting edits to specified users or displaying a warning to all editors. Use when the user asks to lock a header row or formula area so collaborators cannot accidentally overwrite it. Use when setting warning_only=true to flag a sensitive range without fully blocking edits. Do not use when: removing an existing protection - use sheets_unprotect_range with the returned protectedRangeId; listing current protections - use sheets_list_protected_ranges; creating a formula-addressable label - use sheets_create_named_range instead. Returns: 'Protected range created (ID: {protectedRangeId}) - \"{description}\"\\nRange: {range}' (description line omitted if no description supplied). The returned protectedRangeId is required by sheets_unprotect_range. Parameters: - range: A1 notation including sheet name, e.g. 'Sheet1!A1:Z1' - editor_emails: array of email strings allowed to edit; omit to restrict to owner only - warning_only: true shows a warning but does not block edits; overrides editor_emails.",
     {
       spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
       range: z.string().describe("A1 notation range"),
@@ -86,7 +86,7 @@ export function registerProtectionTools(server: McpServer): void {
 
   server.tool(
     "sheets_unprotect_range",
-    "Remove a range protection by its protectedRangeId.",
+    "Removes a range protection from a Google Sheet using spreadsheets.batchUpdate with deleteProtectedRange; requires the numeric protectedRangeId returned by sheets_protect_range or listed by sheets_list_protected_ranges. Use when the user asks to unlock a previously protected range so all collaborators can edit it again. Use when cleaning up stale protections after a workflow change. Do not use when: creating a new protection - use sheets_protect_range instead; finding the protectedRangeId first - use sheets_list_protected_ranges; the user wants a warning instead of full protection - use sheets_protect_range with warning_only=true. Returns: 'Removed protection (ID: {protected_range_id})'. Parameters: - protected_range_id: numeric integer ID returned by sheets_protect_range or sheets_list_protected_ranges; not the same as a sheet ID.",
     {
       spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
       protected_range_id: z.number().int().describe("The protectedRangeId to delete"),
@@ -116,7 +116,7 @@ export function registerProtectionTools(server: McpServer): void {
 
   server.tool(
     "sheets_list_protected_ranges",
-    "List all protected ranges in a spreadsheet.",
+    "Reads all protected ranges from a spreadsheet using spreadsheets.get with fields scoped to protectedRanges, returning each protection's ID, grid coordinates, allowed editors, and warning-only flag. Use when the user asks what ranges are locked, or when you need a protectedRangeId before calling sheets_unprotect_range. Use when auditing a spreadsheet's edit restrictions before modifying its structure. Do not use when: creating a protection - use sheets_protect_range instead; removing a protection - use sheets_unprotect_range instead; listing named ranges - use sheets_list_named_ranges instead. Returns: 'Protected ranges ({N}):\\n[{protectedRangeId}] sheetId=N rows=N-N cols=N-N | \"{description}\" | editors: {emails or \"owner only\"} | warningOnly: {bool}', or 'No protected ranges found.' Parameters: - spreadsheetId: the ID from the sheet URL (between /d/ and /edit).",
     {
       spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
     },

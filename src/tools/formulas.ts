@@ -81,7 +81,7 @@ export function registerFormulaTools(server: McpServer): void {
 
   server.tool(
     "sheets_get_formulas",
-    "Get formula text for cells in a range (non-formula cells show value).",
+    "Reads raw formula strings from a cell range using spreadsheets.values.get with valueRenderOption=FORMULA; non-formula cells return their display value instead. Use when the user asks to inspect or audit the formulas in a sheet, or when you need to verify what expression is in a calculated cell before overwriting it. Use when debugging a formula result by reading its source text rather than its computed output. Do not use when: reading computed cell values - use sheets_read_range instead; reading a single cell's value and metadata - use sheets_get_cell_info instead; reading multiple non-contiguous ranges - use sheets_read_multiple_ranges instead; searching for a value - use sheets_search_values instead; writing a formula - use sheets_write_formula or sheets_write_formulas instead. Returns: '{range}:\\n{tab-separated formula strings per row}', or '{range}: (empty)' if the range has no content. Parameters: - range: A1 notation including sheet name, e.g. 'Sheet1!A1:D10'.",
     {
       spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
       range: z.string().describe("A1 notation range, e.g. 'Sheet1!A1:D10'"),
@@ -113,7 +113,7 @@ export function registerFormulaTools(server: McpServer): void {
 
   server.tool(
     "sheets_write_array_formula",
-    "Write an ARRAYFORMULA to a single cell (auto-wraps if needed). For bulk formula writes, include formulas in sheets_write_range values with = prefix.",
+    "Writes an ARRAYFORMULA to a single cell using spreadsheets.values.update with USER_ENTERED; automatically wraps the expression in ARRAYFORMULA() if not already wrapped, and prepends = if missing. Use when the user asks to write a formula that spills results across a range from a single cell, such as =ARRAYFORMULA(A1:A10*B1:B10). Use when setting up a dynamic column that auto-fills as data is added below. Do not use when: writing a single non-array formula to one cell - use sheets_write_formula instead; writing multiple formulas to scattered cells - use sheets_write_formulas instead; writing an array of values (not a formula) - use sheets_write_range instead; writing mixed data and formulas in a block - use sheets_write_range with USER_ENTERED mode; building a full formatted table - use sheets_write_table instead. Returns: 'Array formula written to {updatedRange}: {finalFormula}' where finalFormula is the ARRAYFORMULA-wrapped expression actually written. Parameters: - cell: target cell in A1 notation, e.g. 'Sheet1!A1'; the formula spills from this anchor - formula: the expression to wrap, e.g. '=A1:A10*B1:B10' or '=ARRAYFORMULA(A1:A10*B1:B10)'.",
     {
       spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
       cell: z.string().describe("Target cell in A1 notation, e.g. 'Sheet1!A1' or 'A1'"),

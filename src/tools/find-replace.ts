@@ -13,7 +13,7 @@ export function registerFindReplaceTools(server: McpServer): void {
 
   server.tool(
     "sheets_find_replace",
-    "Find and replace text across one or all sheets. Returns count of replacements. For multiple replacements in one call, use sheets_find_replace_many.",
+    "Executes a single find-and-replace operation across one sheet or all sheets in a spreadsheet using spreadsheets.batchUpdate with findReplace; supports regex, case sensitivity, and formula-text search. Use when the user asks to update a value or label that appears in multiple cells, such as renaming a product code or correcting a misspelling throughout a sheet. Use when searching within formula text rather than displayed values by setting include_formulas=true. Do not use when: running multiple distinct find-and-replace patterns in one call - use sheets_find_replace_many instead; finding cells containing a value without replacing - use sheets_search_values instead; sorting or filtering rows - use sheets_sort_range or sheets_set_filter instead. Returns: 'Find & replace complete.\\nOccurrences replaced: {N}\\nRows affected: {N}'. Parameters: - find: literal text or regex pattern string - replacement: text to substitute - search_by_regex: true to treat find as a regex (default false) - all_sheets: true to search every tab; defaults to true when sheet_id is omitted.",
     {
       spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
       find: z.string().describe("Text or regex pattern to search for"),
@@ -97,7 +97,7 @@ export function registerFindReplaceTools(server: McpServer): void {
 
   server.tool(
     "sheets_find_replace_many",
-    "Execute multiple find-and-replace operations in one call. Bulk version of sheets_find_replace.",
+    "Executes multiple find-and-replace operations in a single API call using spreadsheets.batchUpdate with multiple findReplace requests; each entry can target different patterns and different sheets. Use when the user asks to apply several text substitutions at once, such as updating a set of product codes or correcting multiple labels in one operation. Use when sequential single replacements would require multiple round trips to the API. Do not use when: executing a single find-and-replace - use sheets_find_replace instead; finding cells without replacing - use sheets_search_values instead; sorting or filtering - use sheets_sort_range or sheets_set_filter instead. Returns: 'Bulk find & replace: {N} operation(s), {N} occurrence(s) replaced across {N} row(s)'. Parameters: - replacements: array of objects each with find and replacement strings, plus optional sheet_id, all_sheets, match_case, match_entire_cell, search_by_regex, include_formulas; operations execute in array order.",
     {
       spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
       replacements: z

@@ -15,7 +15,7 @@ export function registerFilterSortTools(server: McpServer): void {
 
   server.tool(
     "sheets_set_filter",
-    "Set auto-filter on a range with optional per-column criteria.",
+    "Applies a basic auto-filter to a range in a Google Sheet using spreadsheets.batchUpdate with setBasicFilter, optionally pre-setting per-column show/hide criteria; rows not matching active criteria are hidden from view without being deleted. Use when the user asks to add filter dropdowns to a header row, or to pre-filter a sheet to show only rows matching a condition such as a specific category value. Use when hiding rows temporarily without deleting them so the underlying data is preserved. Do not use when: sorting rows into a permanent new order - use sheets_sort_range instead; finding a value across cells - use sheets_search_values instead; replacing text - use sheets_find_replace instead. Returns: 'Set basic filter on {range}'. Parameters: - range: A1 notation including sheet name, e.g. 'Sheet1!A1:F100' - criteria: array of per-column rules; each entry needs column_index (0-based within the filter range), and either hidden_values (list of cell values to hide) or condition_type (e.g. TEXT_CONTAINS, NUMBER_GREATER) with condition_values; omit criteria to set an empty filter with all rows visible.",
     {
       spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
       range: z.string().describe("A1 notation range"),
@@ -98,7 +98,7 @@ export function registerFilterSortTools(server: McpServer): void {
 
   server.tool(
     "sheets_sort_range",
-    "Sort a range by one or more columns (0-based indices).",
+    "Permanently reorders rows in a range by one or more columns using spreadsheets.batchUpdate with sortRange; the sort is applied in-place and cannot be undone without re-sorting or restoring data. Use when the user asks to sort a data table alphabetically, numerically, or by date. Use when applying a multi-level sort, such as primary sort by status and secondary sort by date within each status group. Do not use when: hiding rows that do not match a condition without reordering - use sheets_set_filter instead; finding rows containing a value - use sheets_search_values instead; replacing text in cells - use sheets_find_replace instead. Returns: 'Sorted {range} by: col {N} ASC/DESC, ...' listing each sort spec applied. Parameters: - range: A1 notation excluding headers if present, e.g. 'Sheet1!A2:D100' - sort_specs: array of {column_index, ascending} pairs; column_index is 0-based within the range; first entry is the primary sort key. Example: sort_specs=[{column_index:0,ascending:true},{column_index:2,ascending:false}].",
     {
       spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
       range: z.string().describe("A1 notation range (exclude headers)"),

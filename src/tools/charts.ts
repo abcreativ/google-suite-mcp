@@ -78,7 +78,7 @@ export function registerChartTools(server: McpServer): void {
 
   server.tool(
     "sheets_create_chart",
-    "Create an embedded chart. Types: BAR, LINE, PIE, SCATTER, AREA, COLUMN, COMBO.",
+    "Creates an embedded chart in a Google Sheet using spreadsheets.batchUpdate with addChart; the first column of the data range is used as the X-axis domain and remaining columns as series. Use when the user asks to visualize data in a sheet as a bar, line, pie, scatter, area, column, or combo chart. Use when adding a chart to a dashboard sheet after building it with sheets_build_dashboard. Do not use when: removing a chart - use sheets_delete_chart with the returned chartId; building a full multi-chart dashboard - use sheets_build_dashboard instead. Returns: 'Created {chart_type} chart (chartId: {chartId}) in sheet \"{sheet}\"'. The returned chartId is required by sheets_delete_chart. Parameters: - chart_type: one of BAR, LINE, PIE, SCATTER, AREA, COLUMN, COMBO - data_range: A1 notation range where the first column is X-axis labels, e.g. 'Sheet1!A1:C20' - sheet: tab name or ID where the chart will be embedded.",
     {
       spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
       sheet: z.string().describe("Sheet name or ID for chart placement"),
@@ -319,7 +319,7 @@ export function registerChartTools(server: McpServer): void {
 
   server.tool(
     "sheets_delete_chart",
-    "Delete an embedded chart by its chart ID.",
+    "Deletes an embedded chart from a spreadsheet using spreadsheets.batchUpdate with deleteEmbeddedObject; the chart is removed but the underlying data range is not affected. Use when the user asks to remove a chart that is no longer needed. Use when replacing a chart by deleting the old one and calling sheets_create_chart with updated parameters. Do not use when: creating a chart - use sheets_create_chart instead; building a full dashboard - use sheets_build_dashboard instead. Returns: 'Deleted chart {chart_id}'. Parameters: - chart_id: numeric chart ID returned by sheets_create_chart; obtain from the sheet if the ID is not known by inspecting the spreadsheet JSON.",
     {
       spreadsheet_id: z.string().describe("Spreadsheet ID or URL"),
       chart_id: z.number().int().describe("Chart ID to delete (returned by sheets_create_chart)"),
