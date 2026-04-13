@@ -5,6 +5,9 @@ Google Workspace MCP server for Claude Desktop, Cursor, Windsurf, VS Code, Gemin
 
 # google-suite-mcp
 
+[![google-suite-mcp MCP server](https://glama.ai/mcp/servers/abcreativ/google-suite-mcp/badges/card.svg)](https://glama.ai/mcp/servers/abcreativ/google-suite-mcp)
+[![google-suite-mcp MCP server](https://glama.ai/mcp/servers/abcreativ/google-suite-mcp/badges/score.svg)](https://glama.ai/mcp/servers/abcreativ/google-suite-mcp)
+
 **You have an AI that can think. Now give it hands.**
 
 An open-source Google Workspace MCP server that gives Claude Desktop, Cursor, Windsurf, Zed, VS Code (GitHub Copilot), Gemini CLI, and any other Model Context Protocol client full read/write control over Google Sheets, Docs, Drive, and Apps Script. 82 tools. One server. MIT licensed.
